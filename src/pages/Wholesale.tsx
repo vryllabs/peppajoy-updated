@@ -1,7 +1,15 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Handshake, Building2, TrendingUp, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function Wholesale() {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+  };
+
   return (
     <div className="bg-peppa-light min-h-screen">
       {/* Hero Section */}
@@ -88,47 +96,68 @@ export default function Wholesale() {
                 <h3 className="text-2xl font-serif font-bold text-peppa-dark mb-2 relative z-10">Apply for a Wholesale Account</h3>
                 <p className="text-gray-500 text-sm mb-8 relative z-10">Please fill out the form below. Our team will review your application within 1-2 business days.</p>
                 
-                <form className="space-y-6 relative z-10">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-peppa-dark mb-2">First Name</label>
-                      <input type="text" className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                {isSubmitted ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-peppa-green/10 border border-peppa-green/20 rounded-2xl p-8 text-center relative z-10"
+                  >
+                    <div className="w-16 h-16 bg-peppa-green rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                      <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-peppa-dark mb-2">Last Name</label>
-                      <input type="text" className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                    <h4 className="text-xl font-serif font-bold text-peppa-dark mb-2">Thank You!</h4>
+                    <p className="text-gray-600">Your application is under review. We will get back to you shortly.</p>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">First Name</label>
+                        <input type="text" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">Last Name</label>
+                        <input type="text" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-peppa-dark mb-2">Company Name</label>
-                    <input type="text" className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-peppa-dark mb-2">Email Address</label>
-                    <input type="email" className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-peppa-dark mb-2">Business Type</label>
-                    <select className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all appearance-none">
-                      <option>Retail Store</option>
-                      <option>Restaurant / Cafe</option>
-                      <option>Distributor</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-peppa-dark mb-2">Tax ID / EIN</label>
-                    <input type="text" className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
-                  </div>
-                  
-                  <button type="button" className="w-full bg-peppa-red text-white py-4 rounded-xl font-medium text-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg mt-8">
-                    Submit Application <ArrowRight className="w-5 h-5" />
-                  </button>
-                </form>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">Company Name</label>
+                        <input type="text" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">Email Address</label>
+                        <input type="email" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">Business Type</label>
+                        <select className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all appearance-none">
+                          <option>Retail Store</option>
+                          <option>Restaurant / Cafe</option>
+                          <option>Distributor</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-peppa-dark mb-2">Country</label>
+                        <input type="text" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-peppa-dark mb-2">Tax ID / VAT</label>
+                      <input type="text" required className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-peppa-red/50 focus:border-peppa-red transition-all" />
+                    </div>
+                    
+                    <button type="submit" className="w-full bg-peppa-red text-white py-4 rounded-xl font-medium text-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg mt-8">
+                      Submit Application <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </form>
+                )}
                 
                 <p className="text-center text-xs text-gray-400 mt-6 relative z-10">
                   By submitting this form, you agree to our Wholesale Terms & Conditions.

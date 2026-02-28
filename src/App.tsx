@@ -24,35 +24,38 @@ import PartnerLogin from "./pages/PartnerLogin";
 import ScrollToTop from "./components/ScrollToTop";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
+import { DataProvider } from "./context/DataContext";
 
 export default function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="shop" element={<Shop />} />
-              <Route path="product/:id" element={<Product />} />
-              <Route path="about" element={<About />} />
-              <Route path="fan-club" element={<FanClub />} />
-              <Route path="donate" element={<Donation />} />
-              <Route path="initiative/:id" element={<Initiative />} />
-              <Route path="collection/:id" element={<Collection />} />
-              <Route path="collection-item/:id" element={<CollectionProduct />} />
-              <Route path="wholesale" element={<Wholesale />} />
-              <Route path="merchant-portal" element={<MerchantDashboard />} />
-              <Route path="admin-dashboard" element={<AdminDashboard />} />
-              <Route path="driver-dashboard" element={<DriverDashboard />} />
-              <Route path="login" element={<Login />} />
-              <Route path="partner-login" element={<PartnerLogin />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
-          </Routes>
-        </Router>
-      </CartProvider>
+      <DataProvider>
+        <CartProvider>
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="shop" element={<Shop />} />
+                <Route path="product/:id" element={<Product />} />
+                <Route path="about" element={<About />} />
+                <Route path="fan-club" element={<FanClub />} />
+                <Route path="donate" element={<Donation />} />
+                <Route path="initiative/:id" element={<Initiative />} />
+                <Route path="collection/:id" element={<Collection />} />
+                <Route path="collection-item/:id" element={<CollectionProduct />} />
+                <Route path="wholesale" element={<Wholesale />} />
+                <Route path="merchant-portal" element={<MerchantDashboard />} />
+                <Route path="admin-dashboard" element={<AdminDashboard />} />
+                <Route path="driver-dashboard" element={<DriverDashboard />} />
+                <Route path="login" element={<Login />} />
+                <Route path="partner-login" element={<PartnerLogin />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
+            </Routes>
+          </Router>
+        </CartProvider>
+      </DataProvider>
     </AuthProvider>
   );
 }

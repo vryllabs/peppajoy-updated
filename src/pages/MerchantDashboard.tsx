@@ -13,53 +13,61 @@ import {
   User,
   MapPin,
   ClipboardList,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useData } from "../context/DataContext";
 import { cn } from "../lib/utils";
 
-interface WholesaleOrder {
-  id: string;
-  poNumber: string;
-  date: string;
-  items: { name: string; cases: number }[];
-  totalCases: number;
-  status: 'pending' | 'approved' | 'shipped' | 'delivered';
-  orderedBy: string;
-  deliveryLocation: string;
-}
-
-const MOCK_ORDERS: WholesaleOrder[] = [
-  {
-    id: "1",
-    poNumber: "CS-021526",
-    date: "2026-02-15",
-    items: [{ name: "Peppajoy Original (Case of 12)", cases: 4 }],
-    totalCases: 4,
-    status: 'delivered',
-    orderedBy: "John Manager",
-    deliveryLocation: "Conch Shack Warehouse, Blue Hills"
-  },
-  {
-    id: "2",
-    poNumber: "CS-022026",
-    date: "2026-02-20",
-    items: [{ name: "Peppajoy Original (Case of 12)", cases: 2 }],
-    totalCases: 2,
-    status: 'approved',
-    orderedBy: "Sarah Smith",
-    deliveryLocation: "Conch Shack Restaurant, Grace Bay"
-  }
+const PRODUCTS = [
+  { id: 'p1', name: 'Peppajoy Regular', desc: '12/5oz Bottles', price: 75, image: 'https://i.ibb.co/FL51THW9/image.jpg' },
+  { id: 'p2', name: 'Peppajoy Ghost', desc: '12/5oz Bottles', price: 90, image: 'https://i.ibb.co/Z6RJHPpy/image.jpg' },
+  { id: 'p3', name: 'Peppajoy Lemon Mild', desc: '12/5oz Bottles', price: 75, image: 'https://i.ibb.co/nMDxtLh6/image.jpg' },
+  { id: 'p4', name: 'Peppajoy Jerk Seasoning', desc: '12 Count', price: 102, image: 'https://i.ibb.co/7NyDJ1Lm/image.jpg' },
+  { id: 'p5', name: 'Peppajoy Regular Gallons', desc: '4/128oz Gallons', price: 296, image: 'https://i.ibb.co/3ykkg9y1/image.jpg' },
 ];
 
 export default function MerchantDashboard() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
+  const { orders, setOrders } = useData();
   const [activeTab, setActiveTab] = useState<'new-order' | 'history'>('new-order');
-  const [cases, setCases] = useState(1);
+  
+  // Login state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleMerchantLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    
+    if (loginEmail !== "demo@demo.com" || loginPassword !== "12345") {
+      setError("Invalid credentials. Use demo@demo.com / 12345");
+      return;
+    }
+    
+    login({ 
+      isWholesale: true, 
+      role: 'MERCHANT', 
+      merchantStatus: 'APPROVED', 
+      name: "Conch Shack",
+      email: loginEmail,
+      memberSince: new Date().toISOString(),
+      membership: {
+        status: 'active',
+        tier: 'merchant',
+        nextBilling: ''
+      }
+    });
+  };
+
+  const [productQuantities, setProductQuantities] = useState<Record<string, number>>({});
   const [poOption, setPoOption] = useState<'auto' | 'manual'>('auto');
   const [manualPo, setManualPo] = useState("");
   const [orderedBy, setOrderedBy] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState("");
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -80,29 +88,131 @@ export default function MerchantDashboard() {
 
   const generatedPo = `${businessInitials}-${dateSequence}`;
 
-  const shippingFee = cases >= 4 ? 0 : 25;
-  const isFreeShipping = cases >= 4;
+  const totalCases = Object.values(productQuantities).reduce((sum, q) => sum + q, 0);
+  const subtotal = Object.entries(productQuantities).reduce((sum, [id, q]) => {
+    const product = PRODUCTS.find(p => p.id === id);
+    return sum + (product ? product.price * q : 0);
+  }, 0);
+  const shippingFee = totalCases >= 4 || totalCases === 0 ? 0 : 25;
+  const isFreeShipping = totalCases >= 4;
+  const total = subtotal + shippingFee;
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
+    if (totalCases === 0) {
+      alert("Please select at least one product.");
+      return;
+    }
     setIsSubmitting(true);
     
+    const itemsList = Object.entries(productQuantities)
+      .filter(([_, q]) => q > 0)
+      .map(([id, q]) => {
+        const product = PRODUCTS.find(p => p.id === id);
+        return `${q} Cases ${product?.name}`;
+      })
+      .join(', ');
+
+    const newOrder = {
+      id: `ORD-${Math.random().toString(36).substr(2, 9)}`,
+      poNumber: poOption === 'auto' ? generatedPo : manualPo,
+      merchantName: user?.name || "Unknown Merchant",
+      contactName: orderedBy,
+      address: deliveryLocation,
+      notes: notes,
+      items: itemsList,
+      date: new Date().toISOString(),
+      status: 'PENDING' as const
+    };
+
     // Simulate API call
     setTimeout(() => {
+      setOrders(prev => [newOrder, ...prev]);
       setIsSubmitting(false);
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         setActiveTab('history');
         // Reset form
-        setCases(1);
+        setProductQuantities({});
         setManualPo("");
         setOrderedBy("");
+        setDeliveryLocation("");
+        setNotes("");
       }, 3000);
     }, 1500);
   };
 
+  const merchantOrders = orders.filter(ord => ord.merchantName === user?.name);
+
   if (!user?.isWholesale) {
+    if (!user) {
+      // Show login form directly if not logged in
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-peppa-light px-4">
+          <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border border-black/5">
+            <div className="text-center mb-8">
+              <Building2 className="w-12 h-12 text-peppa-dark mx-auto mb-4" />
+              <h2 className="text-2xl font-serif font-bold text-peppa-dark mb-2">Merchant Login</h2>
+              <p className="text-gray-600 text-sm">Sign in to access the wholesale portal.</p>
+            </div>
+            
+            {error && (
+              <div className="mb-6 p-4 bg-peppa-red/10 border border-peppa-red/20 rounded-xl text-peppa-red text-sm font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
+            
+            <form onSubmit={handleMerchantLogin} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-peppa-dark mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full bg-gray-50 border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark transition-colors"
+                  placeholder="demo@demo.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-peppa-dark mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input 
+                    type="password" 
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-full bg-gray-50 border border-black/10 rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-peppa-dark transition-colors"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-peppa-dark text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-black transition-all flex items-center justify-center gap-2"
+              >
+                Sign In <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+            
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have a wholesale account?{' '}
+                <a href="/wholesale" className="text-peppa-red font-bold hover:underline">
+                  Apply Now
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-peppa-light px-4">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl text-center border border-black/5">
@@ -111,9 +221,14 @@ export default function MerchantDashboard() {
           <p className="text-gray-600 mb-8">
             This portal is exclusively for approved wholesale merchants.
           </p>
-          <a href="/wholesale" className="inline-block bg-peppa-red text-white px-8 py-3 rounded-full font-medium hover:bg-red-700 transition-colors">
-            Apply for Wholesale Account
-          </a>
+          <div className="flex flex-col gap-4">
+            <a href="/login" className="inline-block bg-peppa-dark text-white px-8 py-3 rounded-full font-medium hover:bg-black transition-colors">
+              Login as Merchant
+            </a>
+            <a href="/wholesale" className="inline-block bg-peppa-red text-white px-8 py-3 rounded-full font-medium hover:bg-red-700 transition-colors">
+              Apply for Wholesale Account
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -185,175 +300,218 @@ export default function MerchantDashboard() {
                     </div>
                   ) : (
                     <form onSubmit={handleSubmitOrder}>
-                      <div className="p-8 border-b border-black/5">
-                        <h2 className="text-2xl font-serif font-bold text-peppa-dark mb-6 flex items-center gap-3">
-                          <Package className="w-6 h-6 text-peppa-red" />
+                      <div className="p-6 sm:p-8 border-b border-black/5 space-y-6">
+                        <h2 className="text-xl sm:text-2xl font-serif font-bold text-peppa-dark flex items-center gap-3">
+                          <ClipboardList className="w-6 h-6 text-peppa-red" />
                           Order Details
                         </h2>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                          {/* Product Selection */}
-                          <div className="space-y-6">
-                            <div>
-                              <label className="block text-sm font-bold text-peppa-dark mb-3">Select Product</label>
-                              <div className="p-4 rounded-2xl border-2 border-peppa-red bg-peppa-red/5 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                  <img 
-                                    src="https://i.ibb.co/5X4rfMSP/vryl-output-1770048402023.jpg" 
-                                    alt="Peppajoy Original" 
-                                    className="w-12 h-12 rounded-lg object-cover"
-                                  />
-                                  <div>
-                                    <p className="font-bold text-peppa-dark">Peppajoy Original</p>
-                                    <p className="text-xs text-gray-500">Case of 12 Bottles</p>
-                                  </div>
-                                </div>
-                                <span className="font-bold text-peppa-red">$120.00 / case</span>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-bold text-peppa-dark mb-3">Quantity (Cases)</label>
-                              <div className="flex items-center gap-6">
-                                <div className="flex items-center bg-peppa-light rounded-2xl p-1 border border-black/5">
-                                  <button 
-                                    type="button"
-                                    onClick={() => setCases(Math.max(1, cases - 1))}
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white transition-all"
-                                  >
-                                    <Plus className="w-4 h-4 rotate-45" />
-                                  </button>
-                                  <span className="w-12 text-center font-bold text-lg">{cases}</span>
-                                  <button 
-                                    type="button"
-                                    onClick={() => setCases(cases + 1)}
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white transition-all"
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                  </button>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <motion.div 
-                                      className="h-full bg-peppa-green"
-                                      initial={{ width: 0 }}
-                                      animate={{ width: `${Math.min(100, (cases / 4) * 100)}%` }}
-                                    />
-                                  </div>
-                                  <p className="text-[10px] mt-2 font-bold uppercase tracking-wider text-gray-500">
-                                    {isFreeShipping ? "✓ Free Delivery Unlocked" : `Add ${4 - cases} more cases for free delivery`}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Order Info */}
-                          <div className="space-y-6">
-                            <div>
-                              <label className="block text-sm font-bold text-peppa-dark mb-3">Purchase Order (PO) Number</label>
-                              <div className="grid grid-cols-2 gap-2 mb-3">
-                                <button 
-                                  type="button"
-                                  onClick={() => setPoOption('auto')}
-                                  className={cn(
-                                    "py-2 rounded-xl text-xs font-bold border-2 transition-all",
-                                    poOption === 'auto' ? "border-peppa-dark bg-peppa-dark text-white" : "border-black/5 bg-white text-gray-500"
-                                  )}
-                                >
-                                  Auto-Generate
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={() => setPoOption('manual')}
-                                  className={cn(
-                                    "py-2 rounded-xl text-xs font-bold border-2 transition-all",
-                                    poOption === 'manual' ? "border-peppa-dark bg-peppa-dark text-white" : "border-black/5 bg-white text-gray-500"
-                                  )}
-                                >
-                                  Enter Manual
-                                </button>
-                              </div>
-                              {poOption === 'auto' ? (
-                                <div className="p-3 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-center font-mono font-bold text-gray-600">
-                                  {generatedPo}
-                                </div>
-                              ) : (
-                                <input 
-                                  type="text" 
-                                  placeholder="e.g. PO-9988"
-                                  value={manualPo}
-                                  onChange={(e) => setManualPo(e.target.value)}
-                                  className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark font-mono"
-                                  required
-                                />
-                              )}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-bold text-peppa-dark mb-3">Ordered By (Name)</label>
-                              <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input 
-                                  type="text" 
-                                  placeholder="Full Name"
-                                  value={orderedBy}
-                                  onChange={(e) => setOrderedBy(e.target.value)}
-                                  className="w-full bg-peppa-light border border-black/10 rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-peppa-dark"
-                                  required
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-8 bg-gray-50">
-                        <h3 className="text-lg font-serif font-bold text-peppa-dark mb-6 flex items-center gap-3">
-                          <MapPin className="w-5 h-5 text-peppa-green" />
-                          Delivery Location
-                        </h3>
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* PO Number */}
                           <div>
-                            <label className="block text-sm font-bold text-peppa-dark mb-3">Delivery Address / Instructions</label>
+                            <label className="block text-sm font-bold text-peppa-dark mb-2">Purchase Order (PO) Number</label>
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                              <button 
+                                type="button"
+                                onClick={() => setPoOption('auto')}
+                                className={cn(
+                                  "py-2 rounded-xl text-xs font-bold border-2 transition-all",
+                                  poOption === 'auto' ? "border-peppa-dark bg-peppa-dark text-white" : "border-black/5 bg-white text-gray-500"
+                                )}
+                              >
+                                Auto-Generate
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => setPoOption('manual')}
+                                className={cn(
+                                  "py-2 rounded-xl text-xs font-bold border-2 transition-all",
+                                  poOption === 'manual' ? "border-peppa-dark bg-peppa-dark text-white" : "border-black/5 bg-white text-gray-500"
+                                )}
+                              >
+                                Enter Manual
+                              </button>
+                            </div>
+                            {poOption === 'auto' ? (
+                              <div className="p-3 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-center font-mono font-bold text-gray-600">
+                                {generatedPo}
+                              </div>
+                            ) : (
+                              <input 
+                                type="text" 
+                                placeholder="e.g. PO-9988"
+                                value={manualPo}
+                                onChange={(e) => setManualPo(e.target.value)}
+                                className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark font-mono"
+                                required
+                              />
+                            )}
+                          </div>
+
+                          {/* Ordered By */}
+                          <div>
+                            <label className="block text-sm font-bold text-peppa-dark mb-2">Ordered By (Name)</label>
+                            <div className="relative">
+                              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <input 
+                                type="text" 
+                                placeholder="Full Name"
+                                value={orderedBy}
+                                onChange={(e) => setOrderedBy(e.target.value)}
+                                className="w-full bg-peppa-light border border-black/10 rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-peppa-dark"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          {/* Delivery Location */}
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-peppa-dark mb-2">Delivery Location (Turks & Caicos)</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <input 
+                                type="text" 
+                                placeholder="Start typing address or location name..."
+                                value={deliveryLocation}
+                                onChange={(e) => setDeliveryLocation(e.target.value)}
+                                className="w-full bg-peppa-light border border-black/10 rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-peppa-dark"
+                                required
+                                list="locations"
+                              />
+                              <datalist id="locations">
+                                <option value="Seven Stars Resort & Spa, Grace Bay, Providenciales" />
+                                <option value="The Ritz-Carlton, Grace Bay, Providenciales" />
+                                <option value="Beaches Turks & Caicos, Lower Bight Road, Providenciales" />
+                                <option value="Amanyara, Northwest Point, Providenciales" />
+                                <option value="Wymara Resort and Villas, Lower Bight Road, Providenciales" />
+                                <option value="Graceway IGA, Leeward Highway, Providenciales" />
+                                <option value="Graceway Gourmet, Grace Bay Road, Providenciales" />
+                                <option value="Ocean Club Resort, Grace Bay, Providenciales" />
+                                <option value="Club Med Turkoise, Grace Bay, Providenciales" />
+                                <option value="The Shore Club, Long Bay Beach, Providenciales" />
+                              </datalist>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 ml-1">Auto-complete enabled for Providenciales and surrounding areas.</p>
+                          </div>
+
+                          {/* Notes */}
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-peppa-dark mb-2">Additional Notes (Optional)</label>
                             <textarea 
-                              placeholder="e.g. Main Restaurant Entrance or Warehouse Storage B"
-                              value={deliveryLocation}
-                              onChange={(e) => setDeliveryLocation(e.target.value)}
-                              className="w-full bg-white border border-black/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-peppa-dark min-h-[100px]"
-                              required
+                              placeholder="Delivery instructions, special requests, etc."
+                              value={notes}
+                              onChange={(e) => setNotes(e.target.value)}
+                              className="w-full bg-peppa-light border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark min-h-[80px]"
                             />
                           </div>
                         </div>
                       </div>
 
-                      <div className="p-8 bg-white border-t border-black/5 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex gap-8">
+                      {/* Products Section */}
+                      <div className="p-6 sm:p-8 border-b border-black/5 bg-gray-50">
+                        <h2 className="text-xl sm:text-2xl font-serif font-bold text-peppa-dark mb-6 flex items-center gap-3">
+                          <Package className="w-6 h-6 text-peppa-red" />
+                          Select Products
+                        </h2>
+                        
+                        <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                          {PRODUCTS.map(product => {
+                            const quantity = productQuantities[product.id] || 0;
+                            return (
+                              <div 
+                                key={product.id}
+                                className={cn(
+                                  "p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white",
+                                  quantity > 0 
+                                    ? "border-peppa-red shadow-sm" 
+                                    : "border-black/5"
+                                )}
+                              >
+                                <div className="flex items-center gap-4 flex-1">
+                                  <img 
+                                    src={product.image} 
+                                    alt={product.name} 
+                                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-black/5"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-peppa-dark text-sm sm:text-base leading-tight mb-1">{product.name}</p>
+                                    <p className="text-xs sm:text-sm text-gray-500">{product.desc} <span className="mx-1">•</span> <span className="font-bold text-peppa-red">${product.price.toFixed(2)}</span></p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-black/5">
+                                  <span className="text-sm font-bold text-peppa-dark sm:hidden">Quantity:</span>
+                                  <div className="flex items-center bg-peppa-light rounded-xl p-1 border border-black/10">
+                                    <button 
+                                      type="button"
+                                      onClick={() => setProductQuantities(prev => ({ ...prev, [product.id]: Math.max(0, quantity - 1) }))}
+                                      className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white transition-all text-peppa-dark shadow-sm"
+                                    >
+                                      <Plus className="w-4 h-4 rotate-45" />
+                                    </button>
+                                    <span className="w-10 text-center font-bold text-base">{quantity}</span>
+                                    <button 
+                                      type="button"
+                                      onClick={() => setProductQuantities(prev => ({ ...prev, [product.id]: quantity + 1 }))}
+                                      className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white transition-all text-peppa-dark shadow-sm"
+                                    >
+                                      <Plus className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-8 bg-white p-6 rounded-2xl border border-black/5 shadow-sm">
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="block text-sm sm:text-base font-bold text-peppa-dark">Total Cases: {totalCases}</label>
+                          </div>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <motion.div 
+                              className="h-full bg-peppa-green"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, (totalCases / 4) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs mt-3 font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1">
+                            {isFreeShipping ? (
+                              <><CheckCircle2 className="w-4 h-4 text-peppa-green" /> <span className="text-peppa-green">Free Delivery Unlocked</span></>
+                            ) : (
+                              `Add ${Math.max(0, 4 - totalCases)} more cases for free delivery`
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 sm:p-6 bg-white border-t border-black/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex gap-4 sm:gap-8 w-full md:w-auto justify-between md:justify-start">
                           <div>
-                            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Subtotal</p>
-                            <p className="text-xl font-bold text-peppa-dark">${(cases * 120).toFixed(2)}</p>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">Subtotal</p>
+                            <p className="text-lg font-bold text-peppa-dark">${subtotal.toFixed(2)}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Delivery Fee</p>
-                            <p className={cn("text-xl font-bold", isFreeShipping ? "text-peppa-green" : "text-peppa-dark")}>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">Delivery Fee</p>
+                            <p className={cn("text-lg font-bold", isFreeShipping ? "text-peppa-green" : "text-peppa-dark")}>
                               {isFreeShipping ? "FREE" : `$${shippingFee.toFixed(2)}`}
                             </p>
                           </div>
-                          <div className="border-l border-black/10 pl-8">
-                            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Total Inquiry Value</p>
-                            <p className="text-2xl font-black text-peppa-red">${(cases * 120 + shippingFee).toFixed(2)}</p>
+                          <div className="border-l border-black/10 pl-4 sm:pl-8">
+                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">Total</p>
+                            <p className="text-xl font-black text-peppa-red">${total.toFixed(2)}</p>
                           </div>
                         </div>
                         
                         <button 
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full md:w-auto bg-peppa-red text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-red-700 transition-all shadow-xl shadow-peppa-red/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                          className="w-full md:w-auto bg-peppa-red text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-peppa-red/20 flex items-center justify-center gap-2 disabled:opacity-50 mt-2 md:mt-0"
                         >
                           {isSubmitting ? (
-                            <>Sending Inquiry...</>
+                            <>Sending...</>
                           ) : (
-                            <>Submit Order Request <ArrowRight className="w-5 h-5" /></>
+                            <>Submit Order <ArrowRight className="w-4 h-4" /></>
                           )}
                         </button>
                       </div>
@@ -388,7 +546,13 @@ export default function MerchantDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5">
-                        {MOCK_ORDERS.map((order) => (
+                        {merchantOrders.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-8 py-12 text-center text-gray-500">
+                              No orders found.
+                            </td>
+                          </tr>
+                        ) : merchantOrders.map((order) => (
                           <tr key={order.id} className="hover:bg-peppa-light/50 transition-colors group">
                             <td className="px-8 py-6">
                               <span className="font-mono font-bold text-peppa-dark">{order.poNumber}</span>
@@ -397,24 +561,20 @@ export default function MerchantDashboard() {
                               {new Date(order.date).toLocaleDateString()}
                             </td>
                             <td className="px-8 py-6">
-                              <p className="text-sm font-bold text-peppa-dark">{order.items[0].name}</p>
-                              <p className="text-xs text-gray-500">{order.totalCases} Cases</p>
+                              <p className="text-sm font-bold text-peppa-dark">{order.items}</p>
                             </td>
                             <td className="px-8 py-6">
                               <span className={cn(
                                 "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                                order.status === 'delivered' ? "bg-peppa-green/10 text-peppa-green" :
-                                order.status === 'approved' ? "bg-peppa-yellow/10 text-peppa-yellow" :
-                                "bg-gray-100 text-gray-500"
+                                order.status === 'DELIVERED' ? "bg-peppa-green/10 text-peppa-green" :
+                                order.status === 'SCHEDULED' ? "bg-blue-100 text-blue-600" :
+                                "bg-peppa-yellow/10 text-peppa-yellow"
                               )}>
-                                {order.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> :
-                                 order.status === 'approved' ? <Clock className="w-3 h-3" /> :
-                                 <AlertCircle className="w-3 h-3" />}
+                                {order.status === 'DELIVERED' ? <CheckCircle2 className="w-3 h-3" /> :
+                                 order.status === 'SCHEDULED' ? <Truck className="w-3 h-3" /> :
+                                 <Clock className="w-3 h-3" />}
                                 {order.status}
                               </span>
-                            </td>
-                            <td className="px-8 py-6 font-bold text-peppa-dark">
-                              ${(order.totalCases * 120).toFixed(2)}
                             </td>
                             <td className="px-8 py-6 text-right">
                               <button className="p-2 rounded-lg hover:bg-white hover:shadow-sm text-gray-400 hover:text-peppa-dark transition-all">
@@ -442,17 +602,9 @@ export default function MerchantDashboard() {
                   <span className="text-gray-400 text-sm">Business Name</span>
                   <span className="font-bold">{user.name}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-white/10">
+                <div className="flex justify-between items-center py-3">
                   <span className="text-gray-400 text-sm">Account Type</span>
                   <span className="text-peppa-yellow font-bold text-xs uppercase tracking-widest">Approved Wholesaler</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-white/10">
-                  <span className="text-gray-400 text-sm">Location</span>
-                  <span className="font-bold">Global</span>
-                </div>
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-gray-400 text-sm">Pricing Tier</span>
-                  <span className="font-bold">Tier 1 (Local B2B)</span>
                 </div>
               </div>
             </div>
@@ -471,13 +623,7 @@ export default function MerchantDashboard() {
                   <div className="w-5 h-5 rounded-full bg-peppa-green/10 flex items-center justify-center text-peppa-green shrink-0 mt-0.5">
                     <CheckCircle2 className="w-3 h-3" />
                   </div>
-                  <p className="text-sm text-gray-600">Payment due upon delivery via Check or Bank Transfer.</p>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-peppa-green/10 flex items-center justify-center text-peppa-green shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3" />
-                  </div>
-                  <p className="text-sm text-gray-600">All orders are subject to manual approval by Peppajoy Admin.</p>
+                  <p className="text-sm text-gray-600">All orders are subject to manual approval by Peppajoy.</p>
                 </li>
               </ul>
             </div>

@@ -8,7 +8,7 @@ const initiativesData = {
   "veterans": {
     title: "Peppajoy Pure Peace",
     subtitle: "Sanctuary for the Spirit",
-    heroImage: "https://i.ibb.co/5ghDNxWn/veterans.avif",
+    heroImage: "https://i.ibb.co/C5qTpCb3/image.png",
     description: "Our mission is to bridge the gap between trauma and tranquility. We believe that while the world can be heavy, everyone deserves a moment of absolute stillness. Pure Peace provides a sanctuary for the spirit, offering a necessary reprieve for those navigating the aftermath of life’s hardest chapters.",
     howWeHelp: "Whether recovering from the shadows of childhood, the front lines of duty, or the weight of life’s unforeseen chapters, Pure Peace offers the sanctuary you deserve. By funding tailored restorative experiences—from luxury spa therapy to quiet wilderness retreats—we provide more than a moment away. We provide the clarity and reprieve required for the soul to heal and the spirit to start anew.",
     icon: Medal,

@@ -1,42 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Truck, MapPin, Package, Camera, CheckCircle2, AlertCircle, Upload, X } from "lucide-react";
+import { Truck, MapPin, Package, Camera, CheckCircle2, AlertCircle, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useData, Order } from "../context/DataContext";
 import { cn } from "../lib/utils";
-
-interface DeliveryTask {
-  id: string;
-  poNumber: string;
-  merchantName: string;
-  address: string;
-  items: string;
-  status: 'PENDING' | 'DELIVERED';
-  invoiceImage?: string;
-}
-
-const MOCK_DELIVERIES: DeliveryTask[] = [
-  {
-    id: "DEL-001",
-    poNumber: "CS-021526",
-    merchantName: "Conch Shack",
-    address: "Conch Shack Warehouse, Blue Hills",
-    items: "4 Cases Peppajoy Original",
-    status: 'PENDING'
-  },
-  {
-    id: "DEL-002",
-    poNumber: "GB-021626",
-    merchantName: "Grace Bay Cafe",
-    address: "Grace Bay Road, Providenciales",
-    items: "2 Cases Peppajoy Original",
-    status: 'PENDING'
-  }
-];
 
 export default function DriverDashboard() {
   const { user } = useAuth();
-  const [deliveries, setDeliveries] = useState<DeliveryTask[]>(MOCK_DELIVERIES);
-  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryTask | null>(null);
+  const { orders, setOrders } = useData();
+  const [selectedDelivery, setSelectedDelivery] = useState<Order | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,9 +45,9 @@ export default function DriverDashboard() {
     
     // Simulate upload and confirmation
     setTimeout(() => {
-      setDeliveries(prev => prev.map(d => 
+      setOrders(prev => prev.map(d => 
         d.id === selectedDelivery.id 
-          ? { ...d, status: 'DELIVERED', invoiceImage: previewImage } 
+          ? { ...d, status: 'DELIVERED', invoiceImage: previewImage, deliveredAt: new Date().toISOString() } 
           : d
       ));
       setIsUploading(false);
@@ -84,8 +56,36 @@ export default function DriverDashboard() {
     }, 1500);
   };
 
-  const pendingDeliveries = deliveries.filter(d => d.status === 'PENDING');
-  const completedDeliveries = deliveries.filter(d => d.status === 'DELIVERED');
+  const pendingDeliveries = orders.filter(d => d.status === 'SCHEDULED');
+  const completedDeliveries = orders.filter(d => d.status === 'DELIVERED');
+
+  const today = new Date().toLocaleDateString();
+  
+  const completedToday = completedDeliveries.filter(d => 
+    d.deliveredAt && new Date(d.deliveredAt).toLocaleDateString() === today
+  );
+
+  const pastDeliveriesByMonth = useMemo(() => {
+    const grouped: Record<string, Order[]> = {};
+    completedDeliveries.forEach(d => {
+      if (!d.deliveredAt) return;
+      const date = new Date(d.deliveredAt);
+      if (date.toLocaleDateString() === today) return; // Skip today's
+      
+      const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!grouped[monthYear]) {
+        grouped[monthYear] = [];
+      }
+      grouped[monthYear].push(d);
+    });
+    return grouped;
+  }, [completedDeliveries, today]);
+
+  const [expandedMonths, setExpandedMonths] = useState<Record<string, boolean>>({});
+
+  const toggleMonth = (month: string) => {
+    setExpandedMonths(prev => ({ ...prev, [month]: !prev[month] }));
+  };
 
   return (
     <div className="bg-peppa-light min-h-screen py-12">
@@ -100,7 +100,7 @@ export default function DriverDashboard() {
             </span>
           </div>
           <h1 className="text-3xl font-serif font-bold text-peppa-dark">
-            Today's Deliveries
+            Upcoming Deliveries
           </h1>
           <p className="text-gray-500 mt-1">Manage your route and upload signed invoices.</p>
         </div>
@@ -124,11 +124,12 @@ export default function DriverDashboard() {
                   <div className="space-y-4 flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-peppa-yellow/10 text-peppa-yellow text-[10px] font-bold uppercase tracking-wider mb-2">
-                          <AlertCircle className="w-3 h-3" /> Pending
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold uppercase tracking-wider mb-2">
+                          <Truck className="w-3 h-3" /> Scheduled
                         </span>
                         <h3 className="text-xl font-bold text-peppa-dark">{delivery.merchantName}</h3>
-                        <p className="text-sm font-mono text-gray-500">PO: {delivery.poNumber}</p>
+                        <p className="text-sm font-medium text-gray-600">Contact: {delivery.contactName}</p>
+                        <p className="text-sm font-mono text-gray-500 mt-1">PO: {delivery.poNumber}</p>
                       </div>
                     </div>
                     
@@ -167,26 +168,79 @@ export default function DriverDashboard() {
             ))
           )}
 
-          {completedDeliveries.length > 0 && (
+          {completedToday.length > 0 && (
             <div className="mt-12">
               <h3 className="text-lg font-serif font-bold text-peppa-dark mb-4 flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-peppa-green" /> Completed Today
               </h3>
               <div className="space-y-4">
-                {completedDeliveries.map(delivery => (
+                {completedToday.map(delivery => (
                   <div key={delivery.id} className="bg-gray-50 rounded-2xl p-4 border border-black/5 flex items-center justify-between opacity-75">
                     <div>
                       <p className="font-bold text-peppa-dark text-sm">{delivery.merchantName}</p>
                       <p className="text-xs text-gray-500 font-mono">{delivery.poNumber}</p>
                     </div>
-                    <span className="text-xs font-bold text-peppa-green uppercase tracking-wider flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Delivered
-                    </span>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-peppa-green uppercase tracking-wider flex items-center gap-1 justify-end">
+                        <CheckCircle2 className="w-3 h-3" /> Delivered
+                      </span>
+                      {delivery.deliveredAt && (
+                        <span className="text-[10px] text-gray-500 mt-1 block">
+                          {new Date(delivery.deliveredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {Object.entries(pastDeliveriesByMonth).map(([month, deliveries]) => (
+            <div key={month} className="mt-8">
+              <button 
+                onClick={() => toggleMonth(month)}
+                className="w-full flex items-center justify-between bg-white p-4 rounded-2xl border border-black/5 shadow-sm hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="text-md font-serif font-bold text-peppa-dark flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-gray-400" /> {month} ({deliveries.length})
+                </h3>
+                {expandedMonths[month] ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+              </button>
+              
+              <AnimatePresence>
+                {expandedMonths[month] && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-4 mt-4">
+                      {deliveries.map(delivery => (
+                        <div key={delivery.id} className="bg-gray-50 rounded-2xl p-4 border border-black/5 flex items-center justify-between opacity-75">
+                          <div>
+                            <p className="font-bold text-peppa-dark text-sm">{delivery.merchantName}</p>
+                            <p className="text-xs text-gray-500 font-mono">{delivery.poNumber}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1 justify-end">
+                              <CheckCircle2 className="w-3 h-3" /> Delivered
+                            </span>
+                            {delivery.deliveredAt && (
+                              <span className="text-[10px] text-gray-500 mt-1 block">
+                                {new Date(delivery.deliveredAt).toLocaleDateString()} at {new Date(delivery.deliveredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -217,7 +271,8 @@ export default function DriverDashboard() {
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Delivering to</p>
                   <p className="font-bold text-peppa-dark text-lg">{selectedDelivery.merchantName}</p>
-                  <p className="text-sm text-gray-600">{selectedDelivery.address}</p>
+                  <p className="text-sm text-gray-600 font-medium">Contact: {selectedDelivery.contactName}</p>
+                  <p className="text-sm text-gray-600 mt-1">{selectedDelivery.address}</p>
                 </div>
 
                 <div className="space-y-3">

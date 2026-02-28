@@ -149,8 +149,8 @@ export default function FanClub() {
                 <h3 className="text-2xl font-serif font-bold text-peppa-dark mb-2">Premium</h3>
                 <p className="text-gray-500 text-sm mb-6">The ultimate Peppajoy experience.</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-peppa-dark">$45</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-4xl font-bold text-peppa-dark">$450</span>
+                  <span className="text-gray-500">/year</span>
                 </div>
               </div>
               
@@ -178,7 +178,7 @@ export default function FanClub() {
               </ul>
               
               <button 
-                onClick={() => handleJoin("Premium", 45)}
+                onClick={() => handleJoin("Premium", 450)}
                 className="w-full py-4 rounded-full bg-peppa-yellow text-peppa-dark font-medium hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(252,210,14,0.3)] text-center block"
               >
                 Join Premium

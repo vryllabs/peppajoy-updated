@@ -241,7 +241,7 @@ export default function Home() {
                 <motion.div 
                   animate={{ opacity: [0.4, 1, 0.4] }} 
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} 
-                  className="w-6 h-2 bg-peppa-green rounded-full shadow-[0_0_10px_rgba(16,185,129,0.6)]"
+                  className="w-6 h-2 bg-[#00FF00] rounded-full shadow-[0_0_15px_rgba(0,255,0,0.8)]"
                 ></motion.div>
                 <div className="w-6 h-2 bg-white/20 rounded-full"></div>
                 <div className="w-6 h-2 bg-white/20 rounded-full"></div>

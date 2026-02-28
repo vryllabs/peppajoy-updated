@@ -3,13 +3,15 @@ import { User, Package, Crown, ArrowRight, Star, Settings, LogOut, Briefcase, Ma
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import ManageSubscriptionModal from "../components/ManageSubscriptionModal";
 
-type Tab = "dashboard" | "orders" | "settings";
+type Tab = "dashboard" | "orders" | "vip-shop" | "settings";
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [isManageSubscriptionOpen, setIsManageSubscriptionOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -81,6 +83,12 @@ export default function Profile() {
               <Handshake className="w-5 h-5" /> Spread The Joy
             </Link>
             <button 
+              onClick={() => setActiveTab("vip-shop")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === "vip-shop" ? "bg-white text-peppa-dark shadow-sm border border-black/5" : "text-gray-600 hover:bg-white hover:text-peppa-dark"}`}
+            >
+              <Crown className="w-5 h-5" /> VIP Shop
+            </button>
+            <button 
               onClick={() => setActiveTab("settings")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === "settings" ? "bg-white text-peppa-dark shadow-sm border border-black/5" : "text-gray-600 hover:bg-white hover:text-peppa-dark"}`}
             >
@@ -108,18 +116,21 @@ export default function Profile() {
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sm font-medium mb-6">
                         <Star className="w-4 h-4 text-peppa-yellow" /> Fan Club Member
                       </div>
-                      <h2 className="text-3xl font-serif font-bold mb-2">{user.membership.tier} Tier</h2>
+                      <h2 className="text-3xl font-serif font-bold mb-2">{user.membership.tier.toUpperCase()} MEMBER</h2>
                       <p className="text-gray-300">Your next box ships on {user.membership.nextBilling}</p>
                     </div>
                     
                     <div className="flex flex-col gap-3 min-w-[200px]">
-                      <Link 
-                        to="/fan-club" 
+                      <button 
+                        onClick={() => setIsManageSubscriptionOpen(true)}
                         className="bg-peppa-yellow text-peppa-dark px-6 py-3 rounded-xl font-medium text-center hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(252,210,14,0.3)] flex items-center justify-center gap-2"
                       >
                         <Crown className="w-5 h-5" /> Upgrade Tier
-                      </Link>
-                      <button className="px-6 py-3 rounded-xl font-medium text-center border border-white/20 hover:bg-white/5 transition-colors">
+                      </button>
+                      <button 
+                        onClick={() => setIsManageSubscriptionOpen(true)}
+                        className="px-6 py-3 rounded-xl font-medium text-center border border-white/20 hover:bg-white/5 transition-colors"
+                      >
                         Manage Subscription
                       </button>
                     </div>
@@ -174,29 +185,6 @@ export default function Profile() {
                     >
                       {user.isWholesale ? "Access Portal" : "Apply for Wholesale"} <ArrowRight className="w-4 h-4" />
                     </Link>
-                    
-                    {!user.isWholesale && (
-                      <div className="mt-4 space-y-2">
-                        <button 
-                          onClick={simulateMerchant}
-                          className="text-xs text-gray-400 hover:text-peppa-red underline transition-colors w-full text-center"
-                        >
-                          (Demo) Simulate Approved Merchant
-                        </button>
-                        <button 
-                          onClick={simulateAdmin}
-                          className="text-xs text-gray-400 hover:text-peppa-red underline transition-colors w-full text-center"
-                        >
-                          (Demo) Simulate Admin
-                        </button>
-                        <button 
-                          onClick={simulateDriver}
-                          className="text-xs text-gray-400 hover:text-peppa-red underline transition-colors w-full text-center"
-                        >
-                          (Demo) Simulate Driver
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               </motion.div>
@@ -244,6 +232,40 @@ export default function Profile() {
                       <button className="text-sm font-medium text-peppa-red hover:underline">Buy Again</button>
                     </div>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "vip-shop" && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                <div className="bg-white rounded-3xl p-8 border border-black/5 shadow-sm">
+                  <h2 className="text-2xl font-serif font-bold text-peppa-dark mb-4 flex items-center gap-2">
+                    <Crown className="w-6 h-6 text-peppa-yellow" /> VIP Shop
+                  </h2>
+                  {user.membership.tier === 'Premium' ? (
+                    <div>
+                      <p className="text-gray-600 mb-8">Welcome to the exclusive VIP Shop. Here you can find limited edition items available only to Premium members.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="border border-black/5 rounded-2xl p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                          <img src="https://i.ibb.co/Mkj4xzgp/Screenshot-2026-02-28-12-41-47-PM.png" alt="Limited Edition Hat" className="w-full aspect-square object-cover rounded-xl mb-4" />
+                          <h3 className="font-bold text-peppa-dark">Peppajoy Hat Limited Edition</h3>
+                          <p className="text-sm text-gray-500 mb-4">Exclusive VIP merchandise.</p>
+                          <button className="w-full bg-peppa-dark text-white py-2 rounded-xl font-medium hover:bg-black transition-colors">Buy Now - $33</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-peppa-yellow/20 rounded-full flex items-center justify-center text-peppa-yellow mx-auto mb-4">
+                        <Lock className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-bold text-peppa-dark mb-2">Premium Members Only</h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">Upgrade your subscription to the Premium tier to access exclusive limited edition hot sauces and reserve batches.</p>
+                      <button onClick={() => setIsManageSubscriptionOpen(true)} className="inline-block bg-peppa-yellow text-peppa-dark px-8 py-3 rounded-xl font-bold hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(252,210,14,0.3)]">
+                        Upgrade Subscription
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -314,6 +336,10 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      <ManageSubscriptionModal 
+        isOpen={isManageSubscriptionOpen} 
+        onClose={() => setIsManageSubscriptionOpen(false)} 
+      />
     </div>
   );
 }

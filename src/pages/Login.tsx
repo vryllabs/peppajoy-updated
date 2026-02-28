@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { User, Building2, Lock, ArrowRight } from "lucide-react";
+import { User, Building2, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,27 +8,45 @@ export default function Login() {
   const [activeTab, setActiveTab] = useState<'customer' | 'merchant'>('customer');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { updateUser } = useAuth();
+  const [error, setError] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (activeTab === 'merchant') {
-      updateUser({ 
+      if (email !== "demo@demo.com" || password !== "12345") {
+        setError("Invalid credentials. Use demo@demo.com / 12345");
+        return;
+      }
+      login({ 
         isWholesale: true, 
         role: 'MERCHANT', 
         merchantStatus: 'APPROVED', 
         name: "Conch Shack",
-        email: email || "merchant@example.com"
+        email: email,
+        memberSince: new Date().toISOString(),
+        membership: {
+          status: 'active',
+          tier: 'merchant',
+          nextBilling: ''
+        }
       });
       navigate("/merchant-portal");
     } else {
-      updateUser({ 
+      login({ 
         isWholesale: false, 
         role: 'CUSTOMER', 
         name: "John Doe",
-        email: email || "john@example.com"
+        email: email || "john@example.com",
+        memberSince: new Date().toISOString(),
+        membership: {
+          status: 'active',
+          tier: 'fan-club',
+          nextBilling: ''
+        }
       });
       navigate("/profile");
     }
@@ -67,6 +85,12 @@ export default function Login() {
           </div>
 
           <div className="p-8">
+            {error && (
+              <div className="mb-6 p-4 bg-peppa-red/10 border border-peppa-red/20 rounded-xl text-peppa-red text-sm font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-peppa-dark mb-2">Email Address</label>
@@ -75,7 +99,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-gray-50 border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark transition-colors"
-                  placeholder={activeTab === 'merchant' ? "merchant@company.com" : "you@example.com"}
+                  placeholder={activeTab === 'merchant' ? "demo@demo.com" : "you@example.com"}
                   required
                 />
               </div>

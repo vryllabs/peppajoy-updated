@@ -70,7 +70,7 @@ export default function Donation() {
             <Link to="/initiative/veterans" className="bg-peppa-light border border-black/5 rounded-3xl overflow-hidden group hover:border-peppa-red/30 hover:shadow-xl transition-all block">
               <div className="aspect-[16/9] bg-black/20 relative overflow-hidden">
                 <img 
-                  src="https://i.ibb.co/5ghDNxWn/veterans.avif" 
+                  src="https://i.ibb.co/tP1xxX51/image.png" 
                   alt="Peppajoy Pure Peace" 
                   className="w-full h-full object-cover object-center opacity-90 group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"

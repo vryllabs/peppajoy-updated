@@ -80,10 +80,7 @@ export default function Layout() {
 
             {/* Icons */}
             <div className="flex items-center space-x-4 lg:space-x-6">
-              <button className="text-peppa-dark hover:text-peppa-red transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-              <Link to={user ? "/profile" : "/login"} className="text-peppa-dark hover:text-peppa-red transition-colors hidden sm:block">
+              <Link to={user ? "/profile" : "/login"} className="text-peppa-dark hover:text-peppa-red transition-colors">
                 <User className="w-5 h-5" />
               </Link>
               <button 
@@ -168,8 +165,7 @@ export default function Layout() {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to="/about" className="hover:text-peppa-yellow transition-colors">Our Story</Link></li>
                 <li><Link to="/wholesale" className="hover:text-peppa-yellow transition-colors">Wholesale</Link></li>
-                <li><Link to="/merchant-portal" className="hover:text-peppa-yellow transition-colors">Merchant Portal</Link></li>
-                <li><Link to="/partner-login" className="hover:text-peppa-yellow transition-colors font-bold text-peppa-yellow">Partner Portal</Link></li>
+                <li><Link to="/partner-login" className="hover:text-peppa-yellow transition-colors font-bold text-peppa-yellow">Partners</Link></li>
                 <li><Link to="/donate" className="hover:text-peppa-yellow transition-colors">Donations</Link></li>
               </ul>
             </div>

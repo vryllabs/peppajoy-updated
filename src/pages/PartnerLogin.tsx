@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { ShieldCheck, Truck, Lock, ArrowRight } from "lucide-react";
+import { ShieldCheck, Truck, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,7 +9,7 @@ export default function PartnerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { updateUser } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -22,19 +22,31 @@ export default function PartnerLogin() {
     }
     
     if (activeTab === 'admin') {
-      updateUser({ 
+      login({ 
         isWholesale: false, 
         role: 'ADMIN', 
         name: "Peppajoy Admin",
-        email: email
+        email: email,
+        memberSince: new Date().toISOString(),
+        membership: {
+          status: 'active',
+          tier: 'admin',
+          nextBilling: ''
+        }
       });
       navigate("/admin-dashboard");
     } else {
-      updateUser({ 
+      login({ 
         isWholesale: false, 
         role: 'DRIVER', 
         name: "Delivery Driver",
-        email: email
+        email: email,
+        memberSince: new Date().toISOString(),
+        membership: {
+          status: 'active',
+          tier: 'driver',
+          nextBilling: ''
+        }
       });
       navigate("/driver-dashboard");
     }
@@ -58,7 +70,7 @@ export default function PartnerLogin() {
                   : 'text-gray-500 hover:text-peppa-dark'
               }`}
             >
-              <ShieldCheck className="w-4 h-4" /> Management
+              <ShieldCheck className="w-4 h-4" /> Supply
             </button>
             <button
               onClick={() => setActiveTab('driver')}
@@ -68,11 +80,17 @@ export default function PartnerLogin() {
                   : 'text-gray-500 hover:text-peppa-dark'
               }`}
             >
-              <Truck className="w-4 h-4" /> Driver
+              <Truck className="w-4 h-4" /> Delivery
             </button>
           </div>
 
           <div className="p-8">
+            {error && (
+              <div className="mb-6 p-4 bg-peppa-red/10 border border-peppa-red/20 rounded-xl text-peppa-red text-sm font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-peppa-dark mb-2">Email Address</label>
@@ -81,7 +99,7 @@ export default function PartnerLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-gray-50 border border-black/10 rounded-xl px-4 py-3 focus:outline-none focus:border-peppa-dark transition-colors"
-                  placeholder={activeTab === 'admin' ? "admin@peppajoy.com" : "driver@peppajoy.com"}
+                  placeholder={activeTab === 'admin' ? "demo@demo.com" : "demo@demo.com"}
                   required
                 />
               </div>

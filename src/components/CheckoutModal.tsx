@@ -13,9 +13,9 @@ interface CheckoutModalProps {
 
 export default function CheckoutModal({ isOpen, onClose, tier, price }: CheckoutModalProps) {
   const [step, setStep] = useState<"checkout" | "processing" | "success">("checkout");
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const { login } = useAuth();
+  const { user, login, updateUser } = useAuth();
+  const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState(user?.name || "");
   const navigate = useNavigate();
 
   const handleCheckout = (e: FormEvent) => {
@@ -26,18 +26,27 @@ export default function CheckoutModal({ isOpen, onClose, tier, price }: Checkout
     setTimeout(() => {
       setStep("success");
       
-      // Auto-create account and log them in
-      login({
-        name: name || "New Member",
-        email: email,
-        memberSince: new Date().getFullYear().toString(),
-        membership: {
-          status: "active",
-          tier: tier,
-          nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        },
-        isWholesale: false
-      });
+      const membershipData = {
+        status: "active",
+        tier: tier,
+        nextBilling: new Date(Date.now() + (tier === 'Premium' ? 365 : 30) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      };
+
+      if (user) {
+        updateUser({
+          membership: membershipData
+        });
+      } else {
+        // Auto-create account and log them in
+        login({
+          name: name || "New Member",
+          email: email,
+          role: 'CUSTOMER',
+          memberSince: new Date().getFullYear().toString(),
+          membership: membershipData,
+          isWholesale: false
+        });
+      }
 
       // Redirect to profile after showing success message
       setTimeout(() => {
@@ -73,7 +82,7 @@ export default function CheckoutModal({ isOpen, onClose, tier, price }: Checkout
                 <div className="flex items-center justify-between p-6 border-b border-black/5 bg-gray-50">
                   <div>
                     <h2 className="text-xl font-serif font-bold text-peppa-dark">Join {tier} Tier</h2>
-                    <p className="text-sm text-gray-500">${price}/month</p>
+                    <p className="text-sm text-gray-500">${price}/{tier === 'Premium' ? 'year' : 'month'}</p>
                   </div>
                   <button
                     onClick={onClose}
