@@ -279,26 +279,35 @@ export default function DriverDashboard() {
                   <label className="block text-sm font-bold text-peppa-dark">Upload Signed Invoice</label>
                   
                   {previewImage ? (
-                    <div className="relative rounded-2xl overflow-hidden border-2 border-peppa-green/50 aspect-[3/4] bg-gray-100">
-                      <img src={previewImage} alt="Invoice Preview" className="w-full h-full object-cover" />
+                    <div className="relative rounded-2xl border-2 border-peppa-green bg-peppa-green/5 p-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-peppa-green/20 rounded-full flex items-center justify-center text-peppa-green">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-peppa-dark">Photo Attached</p>
+                          <p className="text-xs text-gray-500">Ready to confirm delivery</p>
+                        </div>
+                      </div>
                       <button 
                         onClick={() => setPreviewImage(null)}
-                        className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur text-peppa-red rounded-full shadow-sm hover:bg-white transition-colors"
+                        className="p-2 text-peppa-red hover:bg-peppa-red/10 rounded-full transition-colors"
+                        title="Remove photo"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                       </button>
                     </div>
                   ) : (
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-peppa-dark hover:bg-gray-50 transition-all aspect-[3/4] flex flex-col items-center justify-center gap-4"
+                      className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-peppa-dark hover:bg-gray-50 transition-all flex flex-col items-center justify-center gap-4"
                     >
                       <div className="w-16 h-16 bg-peppa-light rounded-full flex items-center justify-center text-peppa-dark">
                         <Camera className="w-8 h-8" />
                       </div>
                       <div>
-                        <p className="font-bold text-peppa-dark">Take a Photo</p>
-                        <p className="text-xs text-gray-500 mt-1">Capture the signed invoice</p>
+                        <p className="font-bold text-peppa-dark">Upload Photo</p>
+                        <p className="text-xs text-gray-500 mt-1">Capture or attach the signed invoice</p>
                       </div>
                     </div>
                   )}
