@@ -1,17 +1,29 @@
 import { motion } from "motion/react";
-import { User, Package, Crown, ArrowRight, Star, Settings, LogOut, Briefcase, MapPin, Mail, Lock, Handshake } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { User, Package, Crown, ArrowRight, Star, Settings, LogOut, Briefcase, MapPin, Mail, Lock, Handshake, Utensils, Instagram, Camera, Check } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ManageSubscriptionModal from "../components/ManageSubscriptionModal";
 
-type Tab = "dashboard" | "orders" | "vip-shop" | "settings";
+type Tab = "dashboard" | "orders" | "vip-shop" | "recipes" | "settings";
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [isManageSubscriptionOpen, setIsManageSubscriptionOpen] = useState(false);
+  const [submissionUrl, setSubmissionUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmissionInput, setShowSubmissionInput] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["dashboard", "orders", "vip-shop", "recipes", "settings"].includes(tab)) {
+      setActiveTab(tab as Tab);
+    }
+  }, [searchParams]);
 
   const handleLogout = () => {
     logout();
@@ -87,6 +99,12 @@ export default function Profile() {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === "vip-shop" ? "bg-white text-peppa-dark shadow-sm border border-black/5" : "text-gray-600 hover:bg-white hover:text-peppa-dark"}`}
             >
               <Crown className="w-5 h-5" /> VIP Shop
+            </button>
+            <button 
+              onClick={() => setActiveTab("recipes")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeTab === "recipes" ? "bg-white text-peppa-dark shadow-sm border border-black/5" : "text-gray-600 hover:bg-white hover:text-peppa-dark"}`}
+            >
+              <Utensils className="w-5 h-5" /> Recipes & Community
             </button>
             <button 
               onClick={() => setActiveTab("settings")}
@@ -266,6 +284,172 @@ export default function Profile() {
                       </button>
                     </div>
                   )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "recipes" && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                <div className="bg-white rounded-3xl p-8 border border-black/5 shadow-sm">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-serif font-bold text-peppa-dark flex items-center gap-2">
+                      <Utensils className="w-6 h-6 text-peppa-red" /> Recipes & Community
+                    </h2>
+                    <Link to="/recipes" className="text-sm text-peppa-red font-bold hover:underline">Browse All Recipes</Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Featured Recipe for User */}
+                    <div className="bg-peppa-light rounded-2xl p-6 border border-black/5">
+                      <h3 className="text-xs font-mono font-black uppercase tracking-widest text-peppa-red mb-4">Recommended For You</h3>
+                      <div className="aspect-video rounded-xl overflow-hidden mb-4">
+                        <img src="https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&q=80&w=400" alt="Wings" className="w-full h-full object-cover" />
+                      </div>
+                      <h4 className="font-serif font-bold text-lg mb-2">Signature Peppajoy Wings</h4>
+                      <p className="text-sm text-gray-600 mb-4">A classic island favorite. Perfect for your next gathering.</p>
+                      <Link to="/recipe/peppajoy-wings" className="inline-flex items-center gap-2 text-peppa-red font-bold text-sm hover:gap-3 transition-all">
+                        View Recipe <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+
+                    {/* Community Challenge */}
+                    <div className="bg-peppa-dark text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Instagram className="w-20 h-20" />
+                      </div>
+                      <h3 className="text-xs font-mono font-black uppercase tracking-widest text-peppa-yellow mb-4">Monthly Challenge</h3>
+                      <h4 className="font-serif font-bold text-xl mb-4">The #PeppajoyTwist Challenge</h4>
+                      <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+                        Remake any official recipe with your own unique twist. Post it on Instagram, tag <span className="text-peppa-yellow font-bold">@peppajoy</span> and use <span className="text-peppa-yellow font-bold">#peppajoyfanclub</span>.
+                      </p>
+                      <div className="bg-white/10 rounded-xl p-4 mb-6">
+                        <p className="text-xs font-bold text-peppa-yellow uppercase tracking-widest mb-1">The Reward</p>
+                        <p className="text-sm">A curated Peppajoy Mystery Box + A spotlight feature on our global social pages.</p>
+                      </div>
+                      
+                      {!showSubmissionInput ? (
+                        <button 
+                          onClick={() => setShowSubmissionInput(true)}
+                          className="w-full bg-peppa-yellow text-peppa-dark py-3 rounded-xl font-bold text-sm hover:bg-yellow-400 transition-all flex items-center justify-center gap-2"
+                        >
+                          <Camera className="w-4 h-4" /> Submit My Entry
+                        </button>
+                      ) : (
+                        <div className="space-y-3">
+                          <input 
+                            type="url" 
+                            placeholder="Paste Instagram URL here..." 
+                            value={submissionUrl}
+                            onChange={(e) => setSubmissionUrl(e.target.value)}
+                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-peppa-yellow/50 transition-all"
+                          />
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => {
+                                if (submissionUrl) {
+                                  setIsSubmitting(true);
+                                  setTimeout(() => {
+                                    setIsSubmitting(false);
+                                    setShowSubmissionInput(false);
+                                    setSubmissionUrl("");
+                                    setSubmissionSuccess(true);
+                                    // Reset success message after 5 seconds
+                                    setTimeout(() => setSubmissionSuccess(false), 5000);
+                                  }, 1500);
+                                }
+                              }}
+                              disabled={isSubmitting}
+                              className="flex-1 bg-peppa-yellow text-peppa-dark py-2 rounded-xl font-bold text-xs hover:bg-yellow-400 transition-all disabled:opacity-50"
+                            >
+                              {isSubmitting ? "Submitting..." : "Submit"}
+                            </button>
+                            <button 
+                              onClick={() => setShowSubmissionInput(false)}
+                              className="px-4 py-2 rounded-xl border border-white/20 text-xs font-bold hover:bg-white/5 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {submissionSuccess && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-4 p-3 bg-peppa-green/20 border border-peppa-green/30 rounded-xl text-center"
+                        >
+                          <p className="text-xs font-bold text-peppa-green">🎉 Submission received! We'll review it soon.</p>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* My Submissions Preview */}
+                <div className="bg-white rounded-3xl p-8 border border-black/5 shadow-sm">
+                  <h3 className="text-xl font-serif font-bold text-peppa-dark mb-6">Community Submissions</h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {/* Mock Submissions */}
+                    <div className="aspect-square rounded-2xl overflow-hidden relative group border border-black/5">
+                      <img src="https://images.unsplash.com/photo-1562601579-599dec554e8d?auto=format&fit=crop&q=80&w=300" alt="Submission" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-[10px] text-white font-bold">@chef_island</p>
+                        <div className="flex gap-1">
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-square rounded-2xl overflow-hidden relative group border border-black/5">
+                      <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=300" alt="Submission" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-[10px] text-white font-bold">@spicy_tales</p>
+                        <div className="flex gap-1">
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="aspect-square rounded-2xl overflow-hidden relative group border border-black/5">
+                      <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=300" alt="Submission" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-[10px] text-white font-bold">@healthy_peppa</p>
+                        <div className="flex gap-1">
+                          <Star className="w-2 h-2 text-peppa-yellow fill-peppa-yellow" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* User's recent submission placeholder if success */}
+                    {submissionSuccess && (
+                      <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="aspect-square rounded-2xl bg-peppa-light border-2 border-dashed border-peppa-green/30 flex flex-col items-center justify-center p-4 text-center"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-peppa-green/10 flex items-center justify-center text-peppa-green mb-2">
+                          <Check className="w-4 h-4" />
+                        </div>
+                        <p className="text-[10px] font-bold text-peppa-dark uppercase tracking-tighter">Pending Review</p>
+                        <p className="text-[8px] text-gray-400 mt-1">Your submission is being processed</p>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-black/5 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Showing 3 of 128 community creations</p>
+                    <a 
+                      href="https://www.instagram.com/explore/tags/peppajoyfanclub/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-peppa-red hover:underline"
+                    >
+                      View Community Gallery
+                    </a>
+                  </div>
                 </div>
               </motion.div>
             )}

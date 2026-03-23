@@ -32,7 +32,7 @@ export default function Home() {
       title: 'Heat Level',
       product: 'Peppajoy Ghost',
       desc: 'A robust, lingering burn that warms the palate. Crafted with authentic Ghost Peppers for those who crave a serious kick.',
-      image: 'https://i.ibb.co/Z6RJHPpy/image.jpg',
+      image: 'https://vryllabs.myshopify.com/cdn/shop/files/peppajoyghostVL.png',
       Icon: Flame,
       color: 'text-peppa-red',
       shadow: 'shadow-peppa-red/20',
@@ -46,21 +46,7 @@ export default function Home() {
       title: 'Tanginess',
       product: 'Peppajoy Lemon Mild',
       desc: 'A bright, acidic finish that cuts through rich dishes. The perfect balance of citrus zest and Caribbean spice.',
-      image: 'https://i.ibb.co/nMDxtLh6/image.jpg',
-      Icon: Leaf,
-      color: 'text-peppa-green',
-      shadow: 'shadow-peppa-green/20',
-      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.6)]',
-      barColor: 'bg-peppa-green',
-      barShadow: 'shadow-[0_0_10px_rgba(16,185,129,0.6)]',
-      levels: 4
-    },
-    {
-      id: 'sweet',
-      title: 'Sweetness',
-      product: 'Peppajoy Regular',
-      desc: 'Subtle natural sweetness from freshly grown guava. Our signature blend that started it all, perfect for every meal.',
-      image: 'https://i.ibb.co/FL51THW9/image.jpg',
+      image: 'https://m06v20wel2iqfo90-80605380847.shopifypreview.com/cdn/shop/files/peppajoy_lemon.png',
       Icon: Droplets,
       color: 'text-peppa-yellow',
       shadow: 'shadow-peppa-yellow/20',
@@ -68,6 +54,34 @@ export default function Home() {
       barColor: 'bg-peppa-yellow',
       barShadow: 'shadow-[0_0_10px_rgba(252,210,14,0.6)]',
       levels: 3
+    },
+    {
+      id: 'sweet',
+      title: 'Sweetness',
+      product: 'Peppajoy Regular',
+      desc: 'Subtle natural sweetness from freshly grown guava. Our signature blend that started it all, perfect for every meal.',
+      image: 'https://vryllabs.myshopify.com/cdn/shop/files/peppajoy_4_pack_regular.png',
+      Icon: Leaf,
+      color: 'text-peppa-green',
+      shadow: 'shadow-peppa-green/20',
+      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.6)]',
+      barColor: 'bg-peppa-green',
+      barShadow: 'shadow-[0_0_10px_rgba(16,185,129,0.6)]',
+      levels: 3
+    },
+    {
+      id: 'aroma',
+      title: 'Aromatic Depth',
+      product: 'Peppajoy Jerk Seasoning',
+      desc: 'A complex blend of pimento, thyme, and island spices. The soul of Caribbean barbecue, delivering a rich, smoky finish to every dish.',
+      image: 'https://m06v20wel2iqfo90-80605380847.shopifypreview.com/cdn/shop/files/jerkseasoning.png',
+      Icon: Droplets, // Using droplets for the "essence" or Sparkles
+      color: 'text-orange-400',
+      shadow: 'shadow-orange-500/20',
+      glow: 'shadow-[0_0_15px_rgba(251,146,60,0.6)]',
+      barColor: 'bg-orange-500',
+      barShadow: 'shadow-[0_0_10px_rgba(251,146,60,0.6)]',
+      levels: 5
     }
   ];
 
@@ -129,11 +143,13 @@ export default function Home() {
               {/* Set 1 */}
               <div className="text-white font-serif text-xl font-bold italic">The New York Times</div>
               <div className="text-white font-sans text-xl font-black tracking-tighter">VOGUE</div>
+              <img src="https://seekvectorlogo.com/wp-content/uploads/2022/02/matador-network-vector-logo-2022.png" alt="Matador Network" className="h-8 brightness-0 invert opacity-80" referrerPolicy="no-referrer" />
               <div className="text-white font-serif text-xl font-medium uppercase tracking-widest">Forbes</div>
               <div className="text-white font-sans text-xl font-bold">Bon Appétit</div>
               {/* Set 2 */}
               <div className="text-white font-serif text-xl font-bold italic">The New York Times</div>
               <div className="text-white font-sans text-xl font-black tracking-tighter">VOGUE</div>
+              <img src="https://seekvectorlogo.com/wp-content/uploads/2022/02/matador-network-vector-logo-2022.png" alt="Matador Network" className="h-8 brightness-0 invert opacity-80" referrerPolicy="no-referrer" />
               <div className="text-white font-serif text-xl font-medium uppercase tracking-widest">Forbes</div>
               <div className="text-white font-sans text-xl font-bold">Bon Appétit</div>
             </motion.div>
@@ -353,7 +369,7 @@ export default function Home() {
                     >
                       <div 
                         onClick={() => setActiveMovement(idx)}
-                        className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-[50px] p-8 md:p-12 text-center shadow-2xl transition-all cursor-pointer group relative overflow-hidden ${isActive ? m.shadow : ''}`}
+                        className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-[50px] p-8 md:p-12 text-center shadow-2xl transition-all cursor-pointer group relative overflow-hidden ${isActive ? m.shadow : 'hover:bg-white/10 hover:border-white/20'}`}
                       >
                         {/* Subtle inner glow */}
                         {isActive && (
@@ -361,22 +377,18 @@ export default function Home() {
                         )}
 
                         {/* Product Image Showcase */}
-                        <div className="relative mb-10">
-                          <motion.div 
-                            animate={isActive ? { 
-                              y: [0, -15, 0],
-                              rotate: [0, 2, -2, 0]
-                            } : {}}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative z-10"
-                          >
-                            <img 
+                        <div className="relative mb-10 group/product">
+                          <div className="relative z-10 h-56 md:h-72 flex items-center justify-center">
+                            <motion.img 
+                              initial={false}
+                              animate={{ scale: isActive ? 1.1 : 0.9 }}
+                              transition={{ duration: 0.5 }}
                               src={m.image} 
                               alt={m.product} 
-                              className={`w-56 h-56 md:w-72 md:h-72 object-contain mx-auto drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] transition-all duration-700 ${isActive ? 'scale-110' : 'scale-90 grayscale-[0.8]'}`}
+                              className={`w-56 h-56 md:w-72 md:h-72 object-contain mx-auto drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] transition-all duration-700 ${!isActive && 'grayscale-[0.8]'}`}
                               referrerPolicy="no-referrer"
                             />
-                          </motion.div>
+                          </div>
                           
                           {/* Dynamic Background Glow */}
                           <AnimatePresence>
@@ -404,22 +416,34 @@ export default function Home() {
                           <p className="text-peppa-yellow text-sm uppercase tracking-[0.3em] mb-8 font-black">{m.product}</p>
                           
                           <div className="flex justify-center gap-2 mb-10">
-                            {[...Array(5)].map((_, i) => (
-                              <motion.div 
-                                key={i} 
-                                initial={false}
-                                animate={{
-                                  height: i < m.levels ? [8, 12, 8] : 8,
-                                  opacity: i < m.levels ? 1 : 0.2
-                                }}
-                                transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
-                                className={`w-10 h-2 rounded-full transition-all duration-700 ${
-                                  i < m.levels 
-                                    ? `${m.barColor} ${m.barShadow}` 
-                                    : 'bg-white/10'
-                                }`}
-                              ></motion.div>
-                            ))}
+                            {[...Array(5)].map((_, i) => {
+                              const isFilled = i < m.levels;
+                              const isLastFilled = i === m.levels - 1;
+                              const borderColorClass = m.color.replace('text-', 'border-');
+                              
+                              return (
+                                <motion.div 
+                                  key={i} 
+                                  initial={false}
+                                  animate={{
+                                    height: isFilled ? [8, 12, 8] : 8,
+                                    opacity: isFilled ? (isLastFilled ? [1, 0.4, 1] : 1) : 0.3,
+                                    scale: isLastFilled ? [1, 1.1, 1] : 1
+                                  }}
+                                  transition={{ 
+                                    duration: isLastFilled ? 1.5 : 2, 
+                                    repeat: Infinity, 
+                                    ease: "easeInOut",
+                                    delay: isFilled && !isLastFilled ? i * 0.2 : 0 
+                                  }}
+                                  className={`w-10 h-2 rounded-full transition-all duration-700 ${
+                                    isFilled 
+                                      ? `${m.barColor} ${m.barShadow}` 
+                                      : `border ${borderColorClass}/40 bg-transparent`
+                                  }`}
+                                ></motion.div>
+                              );
+                            })}
                           </div>
                           
                           <p className="text-gray-300 text-base md:text-lg leading-relaxed max-w-[320px] mx-auto font-light">
@@ -439,33 +463,34 @@ export default function Home() {
               </AnimatePresence>
             </div>
 
-            {/* Navigation Controls (Refined) */}
-            <div className="absolute bottom-[-40px] left-0 right-0 flex items-center justify-between px-4 md:px-24 z-50">
+            {/* Navigation Controls (Immersive Side Placement) */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between pointer-events-none z-50 px-4 md:-mx-12">
               <button 
                 onClick={prevMovement}
-                className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl"
+                className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl pointer-events-auto"
               >
-                <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+                <ChevronLeft className="w-5 h-5 md:w-8 md:h-8 group-hover:-translate-x-1 transition-transform" />
               </button>
               
-              <div className="flex gap-4">
-                {movements.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveMovement(idx)}
-                    className={`h-3 rounded-full transition-all duration-700 ${
-                      activeMovement === idx ? 'w-16 bg-peppa-red' : 'w-3 bg-white/20 hover:bg-white/40'
-                    }`}
-                  />
-                ))}
-              </div>
-
               <button 
                 onClick={nextMovement}
-                className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl"
+                className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl pointer-events-auto"
               >
-                <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-5 h-5 md:w-8 md:h-8 group-hover:translate-x-1 transition-transform" />
               </button>
+            </div>
+
+            {/* Pagination Dots (Bottom Center) */}
+            <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 flex gap-4 z-50">
+              {movements.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveMovement(idx)}
+                  className={`h-3 rounded-full transition-all duration-700 ${
+                    activeMovement === idx ? 'w-16 bg-peppa-red' : 'w-3 bg-white/20 hover:bg-white/40'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </div>

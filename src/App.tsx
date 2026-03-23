@@ -14,6 +14,8 @@ import Donation from "./pages/Donation";
 import Wholesale from "./pages/Wholesale";
 import Initiative from "./pages/Initiative";
 import Collection from "./pages/Collection";
+import Recipes from "./pages/Recipes";
+import RecipeDetail from "./pages/RecipeDetail";
 import CollectionProduct from "./pages/CollectionProduct";
 import Profile from "./pages/Profile";
 import MerchantDashboard from "./pages/MerchantDashboard";
@@ -43,6 +45,8 @@ export default function App() {
                 <Route path="donate" element={<Donation />} />
                 <Route path="initiative/:id" element={<Initiative />} />
                 <Route path="collection/:id" element={<Collection />} />
+                <Route path="recipes" element={<Recipes />} />
+                <Route path="recipe/:id" element={<RecipeDetail />} />
                 <Route path="collection-item/:id" element={<CollectionProduct />} />
                 <Route path="wholesale" element={<Wholesale />} />
                 <Route path="merchant-portal" element={<MerchantDashboard />} />

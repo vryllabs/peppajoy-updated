@@ -48,6 +48,7 @@ export default function Layout() {
             <nav className="hidden lg:flex items-center space-x-8">
               <Link to="/" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">Home</Link>
               <Link to="/shop" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">Shop</Link>
+              <Link to="/recipes" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">Recipes</Link>
               <Link to="/about" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">About Us</Link>
               <Link to="/fan-club" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">Fan Club</Link>
               <Link to="/wholesale" className="text-sm font-medium text-peppa-dark hover:text-peppa-red transition-colors">Wholesale</Link>
@@ -103,6 +104,7 @@ export default function Layout() {
           <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-b border-black/5 shadow-lg">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">Home</Link>
             <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">Shop</Link>
+            <Link to="/recipes" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">Recipes</Link>
             <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">About Us</Link>
             <Link to="/fan-club" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">Fan Club</Link>
             <Link to="/wholesale" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-peppa-dark hover:text-peppa-red hover:bg-peppa-light rounded-md">Wholesale</Link>
@@ -161,11 +163,11 @@ export default function Layout() {
             </div>
 
             <div className="md:col-span-2">
-              <h4 className="font-serif text-lg font-semibold mb-4 text-white">Company</h4>
+              <h4 className="font-serif text-lg font-semibold mb-4 text-white">Explore</h4>
               <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/recipes" className="hover:text-peppa-yellow transition-colors">Recipes</Link></li>
+                <li><Link to="/fan-club" className="hover:text-peppa-yellow transition-colors">Fan Club</Link></li>
                 <li><Link to="/about" className="hover:text-peppa-yellow transition-colors">Our Story</Link></li>
-                <li><Link to="/wholesale" className="hover:text-peppa-yellow transition-colors">Wholesale</Link></li>
-                <li><Link to="/partner-login" className="hover:text-peppa-yellow transition-colors font-bold text-peppa-yellow">Partners</Link></li>
                 <li><Link to="/donate" className="hover:text-peppa-yellow transition-colors">Donations</Link></li>
               </ul>
             </div>
