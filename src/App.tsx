@@ -14,7 +14,7 @@ import Donation from "./pages/Donation";
 import Wholesale from "./pages/Wholesale";
 import Initiative from "./pages/Initiative";
 import Collection from "./pages/Collection";
-import CollectionProduct from "./components/CollectionProduct";
+import CollectionProduct from "./pages/CollectionProduct";
 import Profile from "./pages/Profile";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import AdminDashboard from "./pages/AdminDashboard";

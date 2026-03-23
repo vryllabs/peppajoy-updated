@@ -1,12 +1,78 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, ShieldCheck, Leaf, Flame, Droplets, Heart, Check } from "lucide-react";
+import { ArrowRight, Star, ShieldCheck, Leaf, Flame, Droplets, Heart, Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 1000], [0, 250]);
   const heroOpacity = useTransform(scrollY, [0, 800], [0.6, 0]);
+
+  const [activeMovement, setActiveMovement] = useState(0);
+  const [activeShowcaseImage, setActiveShowcaseImage] = useState(0);
+
+  const showcaseImages = [
+    "https://i.ibb.co/5X4rfMSP/vryl-output-1770048402023.jpg",
+    "https://i.ibb.co/sdd4wdL5/peppajoybanner.png",
+    "https://i.ibb.co/srmNW8P/Peppajoy-about-us.png",
+    "https://i.ibb.co/YBgc3d36/spreadthejoy.png"
+  ];
+
+  const nextShowcase = () => setActiveShowcaseImage((prev) => (prev + 1) % showcaseImages.length);
+  const prevShowcase = () => setActiveShowcaseImage((prev) => (prev - 1 + showcaseImages.length) % showcaseImages.length);
+
+  useEffect(() => {
+    const timer = setInterval(nextShowcase, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const movements = [
+    {
+      id: 'heat',
+      title: 'Heat Level',
+      product: 'Peppajoy Ghost',
+      desc: 'A robust, lingering burn that warms the palate. Crafted with authentic Ghost Peppers for those who crave a serious kick.',
+      image: 'https://i.ibb.co/Z6RJHPpy/image.jpg',
+      Icon: Flame,
+      color: 'text-peppa-red',
+      shadow: 'shadow-peppa-red/20',
+      glow: 'shadow-[0_0_15px_rgba(220,38,38,0.6)]',
+      barColor: 'bg-peppa-red',
+      barShadow: 'shadow-[0_0_10px_rgba(220,38,38,0.6)]',
+      levels: 5
+    },
+    {
+      id: 'tangy',
+      title: 'Tanginess',
+      product: 'Peppajoy Lemon Mild',
+      desc: 'A bright, acidic finish that cuts through rich dishes. The perfect balance of citrus zest and Caribbean spice.',
+      image: 'https://i.ibb.co/nMDxtLh6/image.jpg',
+      Icon: Leaf,
+      color: 'text-peppa-green',
+      shadow: 'shadow-peppa-green/20',
+      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.6)]',
+      barColor: 'bg-peppa-green',
+      barShadow: 'shadow-[0_0_10px_rgba(16,185,129,0.6)]',
+      levels: 4
+    },
+    {
+      id: 'sweet',
+      title: 'Sweetness',
+      product: 'Peppajoy Regular',
+      desc: 'Subtle natural sweetness from freshly grown guava. Our signature blend that started it all, perfect for every meal.',
+      image: 'https://i.ibb.co/FL51THW9/image.jpg',
+      Icon: Droplets,
+      color: 'text-peppa-yellow',
+      shadow: 'shadow-peppa-yellow/20',
+      glow: 'shadow-[0_0_15px_rgba(252,210,14,0.6)]',
+      barColor: 'bg-peppa-yellow',
+      barShadow: 'shadow-[0_0_10px_rgba(252,210,14,0.6)]',
+      levels: 3
+    }
+  ];
+
+  const nextMovement = () => setActiveMovement((prev) => (prev + 1) % movements.length);
+  const prevMovement = () => setActiveMovement((prev) => (prev - 1 + movements.length) % movements.length);
 
   return (
     <div className="flex flex-col">
@@ -75,7 +141,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* The Signature Sauce Showcase */}
+      {/* The Signature Sauce Showcase - Photo Carousel */}
       <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -84,20 +150,52 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative"
+              className="relative group"
             >
-              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl relative z-10">
-                <motion.img 
-                  initial={{ scale: 1.2 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  src="https://i.ibb.co/5X4rfMSP/vryl-output-1770048402023.jpg" 
-                  alt="Peppajoy Hot Sauce" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl relative z-10 bg-gray-100">
+                <AnimatePresence mode="wait">
+                  <motion.img 
+                    key={activeShowcaseImage}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    src={showcaseImages[activeShowcaseImage]} 
+                    alt={`Peppajoy Showcase ${activeShowcaseImage + 1}`} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </AnimatePresence>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+                
+                {/* Carousel Controls */}
+                <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button 
+                    onClick={prevShowcase}
+                    className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/40 transition-all"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={nextShowcase}
+                    className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/40 transition-all"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Carousel Dots */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                  {showcaseImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveShowcaseImage(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        activeShowcaseImage === idx ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
               
               {/* Decorative Elements */}
@@ -149,7 +247,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Detailed Taste Profile */}
+      {/* Detailed Taste Profile - Symphony of Heat Slider */}
       <section className="py-24 bg-peppa-dark text-white relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
@@ -161,6 +259,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-peppa-dark/60" />
         </div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-peppa-red/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -176,78 +275,198 @@ export default function Home() {
             <p className="text-gray-400 max-w-2xl mx-auto">Perfectly balanced to enhance your food, not overpower it.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-4xl mx-auto">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 text-center shadow-xl transition-shadow hover:shadow-2xl hover:shadow-peppa-red/20"
-            >
-              <Flame className="w-10 h-10 text-peppa-red mx-auto mb-4 drop-shadow-[0_0_15px_rgba(220,38,38,0.6)]" />
-              <h3 className="text-xl font-serif font-bold mb-2">Heat Level</h3>
-              <div className="flex justify-center gap-1 mb-4">
-                <div className="w-6 h-2 bg-peppa-red rounded-full shadow-[0_0_10px_rgba(220,38,38,0.6)]"></div>
-                <div className="w-6 h-2 bg-peppa-red rounded-full shadow-[0_0_10px_rgba(220,38,38,0.6)]"></div>
-                <motion.div 
-                  animate={{ opacity: [0.4, 1, 0.4] }} 
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} 
-                  className="w-6 h-2 bg-peppa-red rounded-full shadow-[0_0_10px_rgba(220,38,38,0.6)]"
-                ></motion.div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
-              </div>
-              <p className="text-sm text-gray-400">A robust, lingering burn that warms the palate.</p>
-            </motion.div>
+          <div className="relative max-w-6xl mx-auto h-[700px] flex items-center justify-center">
+            {/* Dynamic Background Text (Editorial Style) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-visible">
+              <AnimatePresence mode="wait">
+                <motion.h2
+                  key={movements[activeMovement].id}
+                  initial={{ opacity: 0, scale: 0.8, y: 100 }}
+                  animate={{ opacity: 0.08, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 1.2, y: -100 }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="text-[14vw] font-serif font-black uppercase whitespace-nowrap tracking-tighter"
+                >
+                  {movements[activeMovement].id}
+                </motion.h2>
+              </AnimatePresence>
+            </div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 text-center shadow-xl transition-shadow hover:shadow-2xl hover:shadow-peppa-yellow/20"
-            >
-              <Droplets className="w-10 h-10 text-peppa-yellow mx-auto mb-4 drop-shadow-[0_0_15px_rgba(252,210,14,0.6)]" />
-              <h3 className="text-xl font-serif font-bold mb-2">Sweetness</h3>
-              <div className="flex justify-center gap-1 mb-4">
-                <div className="w-6 h-2 bg-peppa-yellow rounded-full shadow-[0_0_10px_rgba(252,210,14,0.6)]"></div>
-                <div className="w-6 h-2 bg-peppa-yellow rounded-full shadow-[0_0_10px_rgba(252,210,14,0.6)]"></div>
-                <motion.div 
-                  animate={{ opacity: [0.4, 1, 0.4] }} 
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} 
-                  className="w-6 h-2 bg-peppa-yellow rounded-full shadow-[0_0_10px_rgba(252,210,14,0.6)]"
-                ></motion.div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
-              </div>
-              <p className="text-sm text-gray-400">Subtle natural sweetness from freshly grown guava.</p>
-            </motion.div>
+            {/* Floating Elements (Parallax Ingredients) */}
+            <div className="absolute inset-0 pointer-events-none z-20">
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    y: [0, -20, 0],
+                    x: [0, 10, 0],
+                    rotate: [0, 10, -10, 0]
+                  }}
+                  transition={{
+                    duration: 5 + i,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.5
+                  }}
+                  className="absolute opacity-20"
+                  style={{
+                    top: `${20 + (i * 15)}%`,
+                    left: `${10 + (i * 15)}%`,
+                  }}
+                >
+                  {i % 3 === 0 ? <Flame className="w-8 h-8 text-peppa-red" /> : 
+                   i % 3 === 1 ? <Leaf className="w-8 h-8 text-peppa-green" /> : 
+                   <Droplets className="w-8 h-8 text-peppa-yellow" />}
+                </motion.div>
+              ))}
+            </div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 text-center shadow-xl transition-shadow hover:shadow-2xl hover:shadow-peppa-green/20"
-            >
-              <Leaf className="w-10 h-10 text-peppa-green mx-auto mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
-              <h3 className="text-xl font-serif font-bold mb-2">Tanginess</h3>
-              <div className="flex justify-center gap-1 mb-4">
-                <div className="w-6 h-2 bg-peppa-green rounded-full shadow-[0_0_10px_rgba(16,185,129,0.6)]"></div>
-                <div className="w-6 h-2 bg-peppa-green rounded-full shadow-[0_0_10px_rgba(16,185,129,0.6)]"></div>
-                <motion.div 
-                  animate={{ opacity: [0.4, 1, 0.4] }} 
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} 
-                  className="w-6 h-2 bg-[#00FF00] rounded-full shadow-[0_0_15px_rgba(0,255,0,0.8)]"
-                ></motion.div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
-                <div className="w-6 h-2 bg-white/20 rounded-full"></div>
+            {/* 3D Spotlight Carousel */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              <AnimatePresence mode="popLayout">
+                {movements.map((m, idx) => {
+                  const MovementIcon = m.Icon;
+                  let diff = idx - activeMovement;
+                  if (diff > 1) diff -= movements.length;
+                  if (diff < -1) diff += movements.length;
+
+                  const isActive = diff === 0;
+
+                  return (
+                    <motion.div
+                      key={m.id}
+                      initial={false}
+                      animate={{
+                        x: diff * (window.innerWidth < 768 ? 300 : 450),
+                        scale: isActive ? 1 : 0.7,
+                        opacity: isActive ? 1 : 0.3,
+                        zIndex: isActive ? 50 : 10,
+                        rotateY: diff * -25,
+                        filter: isActive ? 'blur(0px)' : 'blur(4px)',
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 25
+                      }}
+                      className="absolute w-full max-w-[320px] md:max-w-[420px]"
+                    >
+                      <div 
+                        onClick={() => setActiveMovement(idx)}
+                        className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-[50px] p-8 md:p-12 text-center shadow-2xl transition-all cursor-pointer group relative overflow-hidden ${isActive ? m.shadow : ''}`}
+                      >
+                        {/* Subtle inner glow */}
+                        {isActive && (
+                          <div className={`absolute inset-0 opacity-10 bg-gradient-to-b from-transparent via-${m.barColor.split('-')[1]}-500 to-transparent`} />
+                        )}
+
+                        {/* Product Image Showcase */}
+                        <div className="relative mb-10">
+                          <motion.div 
+                            animate={isActive ? { 
+                              y: [0, -15, 0],
+                              rotate: [0, 2, -2, 0]
+                            } : {}}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative z-10"
+                          >
+                            <img 
+                              src={m.image} 
+                              alt={m.product} 
+                              className={`w-56 h-56 md:w-72 md:h-72 object-contain mx-auto drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] transition-all duration-700 ${isActive ? 'scale-110' : 'scale-90 grayscale-[0.8]'}`}
+                              referrerPolicy="no-referrer"
+                            />
+                          </motion.div>
+                          
+                          {/* Dynamic Background Glow */}
+                          <AnimatePresence>
+                            {isActive && (
+                              <motion.div 
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 0.4, scale: 1.5 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                className={`absolute inset-0 blur-[80px] rounded-full -z-10 ${m.barColor}`}
+                              />
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Content Area */}
+                        <motion.div
+                          animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 30 }}
+                          transition={{ duration: 0.5, delay: 0.1 }}
+                        >
+                          <div className="flex items-center justify-center gap-4 mb-4">
+                            <MovementIcon className={`w-10 h-10 ${m.color} ${m.glow}`} />
+                            <h3 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">{m.title}</h3>
+                          </div>
+                          
+                          <p className="text-peppa-yellow text-sm uppercase tracking-[0.3em] mb-8 font-black">{m.product}</p>
+                          
+                          <div className="flex justify-center gap-2 mb-10">
+                            {[...Array(5)].map((_, i) => (
+                              <motion.div 
+                                key={i} 
+                                initial={false}
+                                animate={{
+                                  height: i < m.levels ? [8, 12, 8] : 8,
+                                  opacity: i < m.levels ? 1 : 0.2
+                                }}
+                                transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                                className={`w-10 h-2 rounded-full transition-all duration-700 ${
+                                  i < m.levels 
+                                    ? `${m.barColor} ${m.barShadow}` 
+                                    : 'bg-white/10'
+                                }`}
+                              ></motion.div>
+                            ))}
+                          </div>
+                          
+                          <p className="text-gray-300 text-base md:text-lg leading-relaxed max-w-[320px] mx-auto font-light">
+                            {m.desc}
+                          </p>
+                        </motion.div>
+
+                        {!isActive && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors rounded-[50px]">
+                            <span className="sr-only">View {m.title}</span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation Controls (Refined) */}
+            <div className="absolute bottom-[-40px] left-0 right-0 flex items-center justify-between px-4 md:px-24 z-50">
+              <button 
+                onClick={prevMovement}
+                className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl"
+              >
+                <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+              </button>
+              
+              <div className="flex gap-4">
+                {movements.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveMovement(idx)}
+                    className={`h-3 rounded-full transition-all duration-700 ${
+                      activeMovement === idx ? 'w-16 bg-peppa-red' : 'w-3 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
               </div>
-              <p className="text-sm text-gray-400">A bright, acidic finish that cuts through rich dishes.</p>
-            </motion.div>
+
+              <button 
+                onClick={nextMovement}
+                className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-peppa-red hover:border-peppa-red transition-all group active:scale-90 shadow-xl"
+              >
+                <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
